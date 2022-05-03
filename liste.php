@@ -1,8 +1,5 @@
 <?php
-define('HOSTNAME','localhost');
-define('USERNAME','root');
-define('PASSWORD','root');
-define('DATABASE','biblioweb');
+require 'config.php';
 
 $books = [];
 $title = "";
@@ -41,6 +38,18 @@ if($result) {
 }
 
 mysqli_close($link);
+
+//Gestion des styles dynamiques
+$filename = 'presets.json';
+$styles = [];
+
+if(file_exists($filename)) {
+	$content = file_get_contents($filename);
+	$json = json_decode($content,true);
+	$styles = $json['homestyles'];
+	
+	//echo '<pre>';var_dump($styles);echo '</pre>';
+}
 ?>
 <!doctype html>
 <html lang="fr">
@@ -48,6 +57,17 @@ mysqli_close($link);
 <title>DB Access</title>
 <meta charset="utf-8">
 <style>
+<?php
+foreach($styles as $selector => $rules) {
+	echo "$selector {\n";
+	
+	foreach($rules as $rule) {
+		echo "\t$rule;\n";
+	}
+	
+	echo "}\n";
+}
+?>
 table { 
 	margin: 15px 20px;
 	border: 1px solid black;
@@ -76,6 +96,7 @@ tfoot {
 </style>
 </head>
 <body>
+<p><a href="signin.php">Se connecter</a></p>
 <ul>
 	<li><a href="<?= $_SERVER['PHP_SELF']; ?>">Tous</a></li>
 	<li><a href="?title=Ubik">Ubik</a></li>
@@ -97,15 +118,29 @@ tfoot {
 		<tr>
 		<?php foreach($fields as $field) : ?>
 			<th><?= ucfirst($field->name); ?></th>
-		<?php endforeach; ?>	
+		<?php endforeach; ?>
+			<th>Actions</th>
 		</tr>
 	</thead>
 	<tbody>
 	<?php foreach($books as $book) : ?>
 		<tr>
-		<?php foreach($book as $data) : ?>
-			<td><?= $data ?></td>
-		<?php endforeach; ?>
+			<td><?= $book['ref'] ?></td>
+			<td><a class="book-title" href="show.php?ref=<?= $book['ref'] ?>"><?= $book['title'] ?></a></td>
+			<td class="author"><?= $book['author_id'] ?></td>
+			<td><?= substr($book['description'],0,20)."..." ?></td>
+			<td><?php if(!empty($book['cover_url'])) : ?>
+				<img src="<?= IMG_FOLDER.$book['cover_url'] ?>" alt="<?= $book['title'] ?>" height="80">
+				<?php endif; ?>
+			</td>
+			<td>
+				<form action="delete.php" method="post">
+					<input type="hidden" name="method" value="DELETE">
+					<input type="hidden" name="ref" value="<?= $book['ref'] ?>">
+					<button class="ico-delete">&#9986;</button>
+				</form>
+				<span class="ico-edit">&#9998;</span>
+			</td>
 		</tr>
 	<?php endforeach; ?>	
 	</tbody>

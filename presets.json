@@ -1,0 +1,12 @@
+{
+	"homestyles": {
+		".author":[
+			"font-weight:bold",
+			"font-variant:small-caps"
+		],
+		".book-title":[
+			"font-style:italic",
+			"color:darkblue"
+		]
+	}
+}
